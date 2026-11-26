@@ -1,0 +1,518 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مساحة أشكال مستوية</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar, home with two big section cards, each section is a full-width workspace.
+   Palette: textbook green + orange, deep-green ink. Type: Cairo for headings, IBM Plex Sans Arabic for text. */
+:root{
+  --bg:#f2f6f4; --card:#ffffff; --fg:#10261f; --muted:#53675f; --line:#d4e0da; --line2:#9db5aa;
+  --brand:#0b6b50; --brand-fg:#ffffff; --accent:#e8612c; --soft:#e3efe9;
+  --pa:#8fd6b8; --pb:#ffcd78; --ph:#f4b1a8; --pn:#e8eeeb;
+  --ok:#0b7a4f; --bad:#b3261e; --okbg:#dff3e8; --badbg:#fbe4e1;
+  --fd:'Cairo','Segoe UI',Tahoma,sans-serif; --fb:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1914; --card:#15241e; --fg:#e6f2ec; --muted:#9db3a9; --line:#2a3f37; --line2:#4d6a5f;
+  --brand:#3ec59a; --brand-fg:#06241a; --accent:#ff8a57; --soft:#1b3129;
+  --pa:#1f8a6a; --pb:#b5832a; --ph:#a8493f; --pn:#22342d;
+  --ok:#5fdca8; --bad:#ff8f86; --okbg:#173b2c; --badbg:#46201d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1914; --card:#15241e; --fg:#e6f2ec; --muted:#9db3a9; --line:#2a3f37; --line2:#4d6a5f;
+  --brand:#3ec59a; --brand-fg:#06241a; --accent:#ff8a57; --soft:#1b3129;
+  --pa:#1f8a6a; --pb:#b5832a; --ph:#a8493f; --pn:#22342d;
+  --ok:#5fdca8; --bad:#ff8f86; --okbg:#173b2c; --badbg:#46201d; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:16px/1.7 var(--fb);direction:rtl;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:30}
+h1,h2,h3{font-family:var(--fd);line-height:1.35;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin-inline:auto}
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--card);border-bottom:1px solid var(--line);
+  margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px))}
+.bar .wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.brand{font:800 1.05rem var(--fd);color:var(--brand);display:flex;align-items:center;gap:8px;background:none;border:0;padding:0}
+.brand i{width:30px;height:30px;border-radius:8px;background:var(--brand);color:var(--brand-fg);display:grid;place-items:center;font:800 1rem var(--fd);font-style:normal}
+.tools{display:flex;gap:8px;align-items:center}
+.ibtn{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);text-decoration:none;color:var(--fg);font-weight:600;font-size:.92rem}
+.ibtn svg{width:20px;height:20px;flex:none}
+.ibtn.tg{background:#229ed9;border-color:#229ed9;color:#fff}
+.ibtn.lock{width:42px;padding:0;justify-content:center}
+.ibtn:hover{border-color:var(--brand)}
+/* hero */
+.hero{padding:34px 0 18px}
+.grade{display:inline-block;font:800 clamp(1.4rem,5vw,2rem) var(--fd);color:var(--brand-fg);background:var(--brand);padding:2px 22px 4px;border-radius:12px}
+.hero h1{font-size:clamp(1.7rem,5.6vw,2.9rem);font-weight:800;margin-top:16px}
+.hero .tag{color:var(--accent);font:800 1.05rem var(--fd);margin-top:12px;display:block}
+.hero p{color:var(--muted);margin:8px 0 0;max-width:60ch}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:22px}
+.choice{text-align:start;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.choice:hover{border-color:var(--brand);transform:translateY(-2px)}
+.choice h2{font-size:1.6rem}
+.choice .ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--soft);color:var(--brand)}
+.choice.q .ico{background:#fde6dc;color:var(--accent)}
+.choice span.go{margin-top:6px;font-weight:600;color:var(--brand)}
+.choice.q span.go{color:var(--accent)}
+.choice p{margin:0;color:var(--muted)}
+/* sections */
+.sec{padding-top:18px}
+.sechead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sechead h2{font-size:1.7rem}
+.back{background:none;border:1px solid var(--line);border-radius:10px;padding:6px 14px;min-height:40px;background:var(--card)}
+.contacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-bottom:16px}
+.contact{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.contact:hover{border-color:#25d366}
+.contact .wa{width:42px;height:42px;border-radius:50%;background:#25d366;display:grid;place-items:center;flex:none}
+.contact .wa svg{width:24px;height:24px;fill:#fff}
+.contact b{display:block;font-family:var(--fd)}
+.contact bdi{display:block;direction:ltr;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.contact em{font-style:normal;color:#128c4a;font-size:.88rem;font-weight:600}
+:root[data-theme="dark"] .contact em{color:#5fdca8}
+.remember{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 16px;margin-bottom:16px}
+.remember summary{cursor:pointer;font:800 1.05rem var(--fd);padding:8px 0;color:var(--brand)}
+.remember ul{margin:0 0 10px;padding-inline-start:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:4px 24px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x proximity}
+.grp{display:flex;gap:6px;align-items:center;flex:none;padding-inline-end:12px;margin-inline-end:4px;border-inline-end:1px solid var(--line)}
+.grp small{font:800 .8rem var(--fd);color:var(--muted);white-space:nowrap}
+.chip{flex:none;white-space:nowrap;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 14px;min-height:38px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-fg);border-color:var(--brand);font-weight:600}
+.work{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.work{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}
+.panel h3{font-size:1.1rem;margin-bottom:8px}
+.qtext{font-size:1.1rem;margin:0 0 10px}
+svg.fig{width:100%;height:auto;display:block;background:var(--soft);border-radius:14px}
+.c-a{fill:var(--pa);stroke:var(--brand);stroke-width:1.6}
+.c-b{fill:var(--pb);stroke:#b67b12;stroke-width:1.6}
+.c-h{fill:var(--ph);stroke:var(--bad);stroke-width:1.6}
+.c-n{fill:var(--pn);stroke:var(--line2);stroke-width:1.6}
+.c-w{fill:var(--card);stroke:var(--line2);stroke-width:1.6;stroke-dasharray:5 3}
+.now{stroke-width:3.4}
+.lab{fill:var(--fg);font:600 13px var(--fb)}
+.ctrl{display:grid;gap:10px}
+.ctrl label{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;font-weight:500}
+.ctrl output{font:800 1.05rem var(--fd);color:var(--brand);font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--brand);min-height:28px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--brand);background:var(--brand);color:var(--brand-fg);border-radius:12px;padding:8px 18px;min-height:44px;font-weight:600}
+.btn.ghost{background:var(--card);color:var(--brand)}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.steps{list-style:none;margin:10px 0;padding:0;display:grid;gap:10px}
+.steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;background:var(--soft);border-radius:12px;padding:10px 12px}
+.steps li.cur{outline:2px solid var(--brand)}
+.steps li i{width:30px;height:30px;border-radius:50%;background:var(--brand);color:var(--brand-fg);display:grid;place-items:center;font:800 .95rem var(--fd);font-style:normal}
+.steps li.plan i{background:var(--accent)}
+.steps b{color:var(--brand)}
+.try{margin-top:12px;border-top:1px dashed var(--line2);padding-top:12px}
+.try input[type=text],.field{font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line2);border-radius:12px;padding:8px 14px;min-height:46px;width:100%;max-width:260px}
+.field{max-width:none}
+.fb{margin-top:8px;padding:8px 12px;border-radius:10px;font-weight:600}
+.fb.ok{background:var(--okbg);color:var(--ok)}
+.fb.no{background:var(--badbg);color:var(--bad)}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:start;border:1.5px solid var(--line2);background:var(--card);border-radius:12px;padding:10px 14px;min-height:46px;font-weight:500}
+.opt[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);font-weight:600}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+/* quiz */
+.qwrap{max-width:720px;margin-inline:auto}
+.prog{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 14px}
+.prog div{height:100%;background:var(--accent);transition:width .25s}
+.score{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;margin:8px auto;font:800 2.2rem var(--fd);background:conic-gradient(var(--brand) var(--deg),var(--line) 0)}
+.score span{width:104px;height:104px;border-radius:50%;background:var(--card);display:grid;place-items:center}
+.rev{display:grid;gap:8px;margin-top:12px}
+.rev details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px}
+.rev summary{cursor:pointer;font-weight:600}
+.rev .tick{color:var(--ok)}.rev .cross{color:var(--bad)}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(5,20,14,.6);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--card);border-radius:20px;padding:22px;max-width:440px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto}
+.modal h3{font-size:1.3rem}
+.muted{color:var(--muted);font-size:.92rem;margin:0}
+.err{color:var(--bad);font-weight:600;min-height:1.4em;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="bar"><div class="wrap">
+  <button class="brand" id="homeBtn" type="button" aria-label="الصفحة الرئيسية"><i>∑</i>مهندسة الرياضيات</button>
+  <div class="tools">
+    <a class="ibtn tg" href="https://t.me/+pjyOcLAg1NY3ZTRk" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.6c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.6 13.3 1.9 11.8c-1-.3-1-1 .2-1.5L20.4 3.2c.9-.3 1.6.2 1.5 1.1Z"/></svg>انضم هنا للمزيد من الملفات</a>
+    <button class="ibtn lock" id="lockBtn" type="button" aria-label="إعدادات المعلم وكلمة السر" title="كلمة السر (للمعلم)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></svg></button>
+  </div>
+</div></div>
+
+<main class="wrap">
+<!-- HOME -->
+<section id="vHome" class="hero">
+  <span class="grade">الصف السابع 7</span>
+  <h1>إيجاد مساحة أشكال مستوية أخرى</h1>
+  <span class="tag">بند 6-3</span>
+  <p>سوف تتعلّم تقسيم الشكل المستوي إلى أشكال مألوفة، ثم الجمع أو الطرح للوصول إلى المساحة المطلوبة.</p>
+  <div class="choices">
+    <button class="choice" id="goEx" type="button">
+      <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5m0 14h16M8 15l4-5 3 3 5-7"/></svg></span>
+      <h2>شرح تفاعلي</h2>
+      <p>١٣ مسألة من الدرس بأرقام جديدة. غيّر الأبعاد بنفسك وشاهد الحل خطوة بخطوة.</p>
+      <span class="go">ابدأ الشرح ←</span>
+    </button>
+    <button class="choice q" id="goQz" type="button">
+      <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span>
+      <h2>الاختبار</h2>
+      <p>١٠ أسئلة من أفكار الدرس بأرقام مختلفة في كل محاولة. اكتب اسمك أولًا ثم ابدأ.</p>
+      <span class="go">ابدأ الاختبار ←</span>
+    </button>
+  </div>
+</section>
+
+<!-- EXPLAIN -->
+<section id="vEx" class="sec" hidden>
+  <div class="sechead"><h2>شرح تفاعلي</h2><button class="back" type="button" data-home>← الرئيسية</button></div>
+  <div class="contacts" id="exContacts"></div>
+  <details class="remember" open>
+    <summary>تذكّر: قوانين المساحة</summary>
+    <ul>
+      <li>المربّع = طول الضلع × نفسه</li>
+      <li>المستطيل = الطول × العرض</li>
+      <li>الدائرة = π نق²</li>
+      <li>المثلّث = ½ × القاعدة × الارتفاع</li>
+      <li>متوازي الأضلاع = القاعدة × الارتفاع</li>
+      <li>شبه المنحرف = ½ (ق١ + ق٢) × ع</li>
+    </ul>
+  </details>
+  <div class="chips" id="chips" role="tablist" aria-label="مسائل الدرس"></div>
+  <div class="work" id="exMain"></div>
+</section>
+
+<!-- QUIZ -->
+<section id="vQz" class="sec" hidden>
+  <div class="sechead"><h2>الاختبار</h2><button class="back" type="button" data-home>← الرئيسية</button></div>
+  <div class="qwrap" id="qzMain"></div>
+</section>
+</main>
+
+<div class="ov" id="ovPass" hidden><form class="modal" id="passForm" autocomplete="off">
+  <h3>كلمة السر</h3>
+  <p class="muted">أدخل كلمة السر التي أعطاك إياها المعلم للدخول إلى الشرح والاختبار.</p>
+  <label for="passIn" class="muted">كلمة السر</label>
+  <input class="field" id="passIn" type="password" autocomplete="off">
+  <p class="err" id="passErr" role="alert"></p>
+  <div class="row"><button class="btn" type="submit">دخول</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+</form></div>
+
+<div class="ov" id="ovTeach" hidden><div class="modal" id="teachBox"></div></div>
+
+<script type="application/json" id="cfg">{"pw":"1234"}</script>
+<script>
+(function(){
+var SRC=document.body.innerHTML; /* pristine markup, reused when the teacher saves a new password */
+var $=function(s,r){return (r||document).querySelector(s)};
+var CFG={pw:'1234'}; try{CFG=JSON.parse($('#cfg').textContent)}catch(e){}
+var AR='٠١٢٣٤٥٦٧٨٩', PI=3.14;
+var ar=function(s){return String(s).replace(/\d/g,function(d){return AR[d]}).replace(/\./g,'٫')};
+var r2=function(x){return Math.round(x*100)/100};
+var n=function(x){return ar(r2(x))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var parseNum=function(s){s=String(s).replace(/[٠-٩]/g,function(d){return AR.indexOf(d)}).replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٫,،]/g,'.').replace(/\s/g,'');return s===''?NaN:Number(s)};
+var U2=function(u){return u==='م'?'م²':'سم²'};
+var shuffle=function(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a};
+var ss={get:function(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- contacts ---------- */
+var WA='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-1.9.9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.6.8 1.9.8 2 .1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.7 1.2 1.5 1.9 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.5.7 1.7.8.3.1.4.2.5.3.1.2.1.7-.1 1.3Z"/></svg>';
+var contact=function(href,num){return '<a class="contact" href="'+href+'" target="_blank" rel="noopener"><span class="wa">'+WA+'</span><span><b>مهندسة الرياضيات</b><bdi>'+num+'</bdi><em>للتواصل اضغط هنا</em></span></a>'};
+var EG=function(){return contact('https://wa.me/message/3SK6HSHQFVALJ1','+٢٠١٠٢٣٠٨٣٢٢٧')};
+var KW=function(){return contact('https://wa.me/96569943365','+96569943365')};
+
+/* ---------- figure engine ---------- */
+var lab=function(p,dx,dy,t,a){return {k:'lab',p:p,dx:dx,dy:dy,t:t,a:a||'middle'}};
+var rect=function(x,y,w,h){return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]]};
+function fig(items,step){
+  var W=340,H=232,x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  var add=function(p){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])};
+  items.forEach(function(it){(it.pts||[]).forEach(add);(it.bb||[]).forEach(add)});
+  var pad=42,sc=Math.min((W-2*pad)/(x1-x0||1),(H-2*pad)/(y1-y0||1));
+  var ox=(W-(x1-x0)*sc)/2-x0*sc,oy=(H-(y1-y0)*sc)/2-y0*sc;
+  var X=function(x){return (ox+x*sc).toFixed(1)},Y=function(y){return (oy+y*sc).toFixed(1)};
+  var out='<svg class="fig" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="الشكل الهندسي">';
+  items.forEach(function(it){
+    var cls=function(){var b=(it.w&&step<it.s)?'c-w':(step>=it.s?'c-'+it.c:'c-n');return b+(it.s===step?' now':'')};
+    if(it.k==='poly'){out+='<polygon class="'+cls()+'" stroke-linejoin="round" points="'+it.pts.map(function(p){return X(p[0])+','+Y(p[1])}).join(' ')+'"/>'}
+    else if(it.k==='semi'){
+      var c=it.ctr,r=it.r,a,b,sw;
+      if(it.d==='L'||it.d==='R'){a=[c[0],c[1]-r];b=[c[0],c[1]+r];sw=it.d==='R'?1:0}
+      else{a=[c[0]-r,c[1]];b=[c[0]+r,c[1]];sw=it.d==='T'?1:0}
+      var rr=(r*sc).toFixed(1);
+      out+='<path class="'+cls()+'" d="M'+X(a[0])+','+Y(a[1])+' A'+rr+','+rr+' 0 0 '+sw+' '+X(b[0])+','+Y(b[1])+'Z"/>'}
+    else if(it.k==='lab'){out+='<text class="lab" x="'+(+X(it.p[0])+it.dx)+'" y="'+(+Y(it.p[1])+it.dy)+'" text-anchor="'+(it.a==='start'?'end':it.a==='end'?'start':'middle')+'">'+it.t+'</text>'}
+  });
+  return out+'</svg>';
+}
+
+/* ---------- problems ---------- */
+var P={};
+var PLAN='نقسم الشكل إلى أشكال هندسية مألوفة، ثم نحسب مساحة كل شكل، ثم نجمع أو نطرح.';
+function Lshape(mode){
+  return {name:mode===1?'استكشف: الطريقة الأولى':'استكشف: الطريقة الثانية',
+  params:[{k:'W',l:'العرض الكلي',min:8,max:18,step:1,v:14},{k:'e',l:'الضلع العلوي الأيمن',min:3,max:16,step:1,v:8},{k:'h',l:'ارتفاع الجزء السفلي',min:2,max:8,step:1,v:5},{k:'H',l:'الارتفاع الكلي',min:6,max:16,step:1,v:12}],
+  fix:function(p){p.e=Math.min(p.e,p.W-2);p.h=Math.min(p.h,p.H-2)},
+  build:function(p){
+    var W=p.W,e=p.e,h=p.h,H=p.H,tb=W-e,th=H-h,R=W*h,T=.5*tb*th,Tz=.5*(e+W)*h,T2=.5*H*tb,A,steps,items;
+    if(mode===1){A=R+T;items=[{k:'poly',pts:rect(0,th,W,h),c:'a',s:1},{k:'poly',pts:[[0,0],[tb,th],[0,th]],c:'b',s:2}];
+      steps=[PLAN+' هنا: مستطيل + مثلث.',
+        'مساحة المستطيل = الطول × العرض = '+n(W)+' × '+n(h)+' = <b>'+n(R)+' سم²</b>',
+        'ارتفاع المثلث = '+n(H)+' − '+n(h)+' = '+n(th)+' سم، وطول قاعدته = '+n(W)+' − '+n(e)+' = '+n(tb)+' سم<br>مساحة المثلث = ½ × '+n(tb)+' × '+n(th)+' = <b>'+n(T)+' سم²</b>',
+        'المساحة الكلية = '+n(R)+' + '+n(T)+' = <b>'+n(A)+' سم²</b>']}
+    else{A=Tz+T2;items=[{k:'poly',pts:[[0,H],[W,H],[W,th],[tb,th]],c:'a',s:1},{k:'poly',pts:[[0,0],[0,H],[tb,th]],c:'b',s:2}];
+      steps=[PLAN+' هنا: شبه منحرف + مثلث.',
+        'مساحة شبه المنحرف = ½ (ق١ + ق٢) × ع = ½ × '+n(h)+' × ('+n(e)+' + '+n(W)+') = <b>'+n(Tz)+' سم²</b>',
+        'ارتفاع المثلث = '+n(W)+' − '+n(e)+' = '+n(tb)+' سم، وطول قاعدته = '+n(H)+' سم<br>مساحة المثلث = ½ × '+n(H)+' × '+n(tb)+' = <b>'+n(T2)+' سم²</b>',
+        'المساحة الكلية = '+n(Tz)+' + '+n(T2)+' = <b>'+n(A)+' سم²</b>']}
+    items.push(lab([0,H/2],-8,4,n(H)+' سم','end'),lab([W/2,H],0,19,n(W)+' سم'),lab([tb+e/2,th],0,-7,n(e)+' سم'),lab([W,th+h/2],8,4,n(h)+' سم','start'));
+    return {text:'أوجد مساحة المنطقة التي سوف تُزرع في الحديقة (الأبعاد بالسنتيمتر). جرّب الطريقتين.',items:items,steps:steps,ans:A,u:'سم',wrong:[A+T,R,A-T,R+tb*th]}}}}
+P.L1=Lshape(1);P.L2=Lshape(2);
+
+P.Pent={name:'دورك الآن ١',
+  params:[{k:'a',l:'عرض المستطيل',min:5,max:12,step:1,v:10},{k:'h',l:'ارتفاع المستطيل',min:3,max:8,step:1,v:6},{k:'L',l:'الطول الكلي',min:8,max:22,step:1,v:15}],
+  fix:function(p){p.L=Math.max(p.L,p.a+2)},
+  build:function(p){var a=p.a,h=p.h,L=p.L,R=a*h,tb=L-a,T=.5*h*tb,A=R+T;
+    return {text:'أوجد المساحة الكلية للشكل الموضّح أمامك (الأبعاد بالسنتيمتر).',
+    items:[{k:'poly',pts:rect(0,0,a,h),c:'a',s:1},{k:'poly',pts:[[a,0],[a,h],[L,h/2]],c:'b',s:2},lab([a/2,0],0,-7,n(a)+' سم'),lab([0,h/2],-8,4,n(h)+' سم','end'),lab([L/2,h],0,19,n(L)+' سم')],
+    steps:[PLAN+' هنا: مستطيل + مثلث.','مساحة المستطيل = '+n(a)+' × '+n(h)+' = <b>'+n(R)+' سم²</b>','قاعدة المثلث = '+n(h)+' سم (الضلع الأيمن للمستطيل)، وارتفاعه = '+n(L)+' − '+n(a)+' = '+n(tb)+' سم<br>مساحة المثلث = ½ × '+n(h)+' × '+n(tb)+' = <b>'+n(T)+' سم²</b>','المساحة الكلية = '+n(R)+' + '+n(T)+' = <b>'+n(A)+' سم²</b>'],
+    ans:A,u:'سم',wrong:[R+h*tb,R,A-T,R+.5*L*h]}}};
+
+P.Para={name:'مثال ١',
+  params:[{k:'b',l:'قاعدة متوازي الأضلاع',min:9,max:16,step:1,v:12},{k:'ht',l:'ارتفاعه',min:6,max:12,step:1,v:8},{k:'rw',l:'طول المستطيل',min:3,max:10,step:1,v:5},{k:'rh',l:'عرض المستطيل',min:2,max:8,step:1,v:3}],
+  fix:function(p){p.rw=Math.min(p.rw,p.b-3);p.rh=Math.min(p.rh,p.ht-2)},
+  build:function(p){var b=p.b,ht=p.ht,rw=p.rw,rh=p.rh,k=ht*.4,PA=b*ht,RA=rw*rh,A=PA-RA,cx=b/2+k/2,cy=ht/2;
+    return {text:'أوجد مساحة الجزء المظلّل في الشكل الآتي (الأبعاد بالسنتيمتر).',
+    items:[{k:'poly',pts:[[k,0],[k+b,0],[b,ht],[0,ht]],c:'a',s:1},{k:'poly',pts:rect(cx-rw/2,cy-rh/2,rw,rh),c:'h',s:2,w:1},
+      lab([b/2,ht],0,19,n(b)+' سم'),lab([b+k/2,ht/2],10,4,n(ht)+' سم','start'),lab([cx,cy],0,4,n(rw)+' × '+n(rh))],
+    steps:['الجزء المظلّل = متوازي الأضلاع − المستطيل الداخلي.','مساحة متوازي الأضلاع = ق × ع = '+n(b)+' × '+n(ht)+' = <b>'+n(PA)+' سم²</b>','مساحة المستطيل = الطول × العرض = '+n(rw)+' × '+n(rh)+' = <b>'+n(RA)+' سم²</b>','مساحة الجزء المظلّل = '+n(PA)+' − '+n(RA)+' = <b>'+n(A)+' سم²</b>'],
+    ans:A,u:'سم',wrong:[PA+RA,PA,RA,A+2*rw]}}};
+
+P.Garden={name:'دورك الآن ٢',
+  params:[{k:'L',l:'طول الحديقة (م)',min:6,max:14,step:1,v:8},{k:'Wd',l:'عرض الحديقة (م)',min:4,max:9,step:1,v:5},{k:'sw',l:'عرض الجزء الأصفر (م)',min:.5,max:3,step:.5,v:1.5}],
+  fix:function(p){p.sw=Math.min(p.sw,p.L-2)},
+  build:function(p){var L=p.L,Wd=p.Wd,sw=p.sw,k=Wd*.35,x1=L/2-sw/2-k/2,RA=L*Wd,SA=sw*Wd,A=RA-SA;
+    return {text:'حديقة منزل على شكل مستطيل طولها '+n(L)+' أمتار وعرضها '+n(Wd)+' أمتار، زُرعت كاملة ما عدا الجزء الأصفر (متوازي أضلاع قاعدته '+n(sw)+' م). أوجد مساحة الجزء المزروع.',
+    items:[{k:'poly',pts:rect(0,0,L,Wd),c:'a',s:1},{k:'poly',pts:[[x1+k,0],[x1+k+sw,0],[x1+sw,Wd],[x1,Wd]],c:'b',s:2},lab([L/2,Wd],0,19,n(L)+' م'),lab([L,Wd/2],8,4,n(Wd)+' م','start')],
+    steps:['المزروع = مساحة الحديقة كاملة − مساحة الجزء الأصفر.','مساحة الحديقة = '+n(L)+' × '+n(Wd)+' = <b>'+n(RA)+' م²</b>','الجزء الأصفر متوازي أضلاع: قاعدته '+n(sw)+' م وارتفاعه '+n(Wd)+' م<br>مساحته = '+n(sw)+' × '+n(Wd)+' = <b>'+n(SA)+' م²</b>','مساحة الجزء المزروع = '+n(RA)+' − '+n(SA)+' = <b>'+n(A)+' م²</b>'],
+    ans:A,u:'م',wrong:[RA+SA,SA,RA,RA-sw*L]}}};
+
+P.Ends={name:'مثال ٢',
+  params:[{k:'L',l:'الطول (م)',min:10,max:24,step:1,v:18},{k:'Wd',l:'العرض (م)',min:4,max:10,step:2,v:8}],
+  fix:function(p){p.L=Math.max(p.L,p.Wd+4)},
+  build:function(p){var L=p.L,Wd=p.Wd,r=Wd/2,RA=L*Wd,CA=PI*r*r,A=RA-CA;
+    return {text:'أوجد مساحة المنطقة المظلّلة للشكل الموضّح (نصفا دائرة عند الطرفين)، باعتبار أنّ π = ٣٫١٤.',
+    items:[{k:'poly',pts:rect(0,0,L,Wd),c:'a',s:1},{k:'semi',ctr:[0,r],r:r,d:'R',c:'h',s:2,w:1},{k:'semi',ctr:[L,r],r:r,d:'L',c:'h',s:2,w:1},lab([L/2,Wd],0,19,n(L)+' م'),lab([L/2,Wd/2],0,4,n(Wd)+' م')],
+    steps:['المظلّل = المستطيل − نصفي الدائرة (يكوّنان معًا دائرة كاملة).','مساحة المستطيل = '+n(L)+' × '+n(Wd)+' = <b>'+n(RA)+' م²</b>','نصف القطر = '+n(Wd)+' ÷ ٢ = '+n(r)+' م<br>مساحة الدائرة = π نق² = ٣٫١٤ × '+n(r)+' × '+n(r)+' = <b>'+n(CA)+' م²</b>','مساحة المنطقة المظلّلة = '+n(RA)+' − '+n(CA)+' = <b>'+n(A)+' م²</b>'],
+    ans:A,u:'م',wrong:[RA+CA,CA,RA-CA/2,RA-PI*Wd*Wd]}}};
+
+P.SemiTop={name:'دورك الآن ٣',
+  params:[{k:'d',l:'القطر = عرض المستطيل',min:6,max:24,step:2,v:14},{k:'h',l:'ارتفاع المستطيل',min:3,max:12,step:1,v:6}],
+  build:function(p){var d=p.d,h=p.h,r=d/2,R=d*h,S=.5*PI*r*r,A=R+S;
+    return {text:'أوجد المساحة الكلية للشكل الآتي، باعتبار أنّ π = ٣٫١٤ (الأبعاد بالسنتيمتر).',
+    items:[{k:'poly',pts:rect(0,r,d,h),c:'a',s:1},{k:'semi',ctr:[d/2,r],r:r,d:'T',c:'b',s:2,bb:[[d/2,0]]},lab([d/2,r+h],0,19,n(d)+' سم'),lab([d,r+h/2],8,4,n(h)+' سم','start')],
+    steps:[PLAN+' هنا: مستطيل + نصف دائرة.','مساحة المستطيل = '+n(d)+' × '+n(h)+' = <b>'+n(R)+' سم²</b>','نصف القطر = '+n(d)+' ÷ ٢ = '+n(r)+' سم<br>مساحة نصف الدائرة = ½ × π نق² = ½ × ٣٫١٤ × '+n(r)+' × '+n(r)+' = <b>'+n(S)+' سم²</b>','المساحة الكلية = '+n(R)+' + '+n(S)+' = <b>'+n(A)+' سم²</b>'],
+    ans:A,u:'سم',wrong:[R+2*S,R,S,R-S]}}};
+
+P.ParaRect={name:'تمرين ١ (أ)',
+  params:[{k:'rw',l:'عرض المستطيل',min:2,max:8,step:1,v:4},{k:'rh',l:'ارتفاع المستطيل',min:3,max:10,step:1,v:7},{k:'ph',l:'ارتفاع متوازي الأضلاع',min:2,max:6,step:1,v:3}],
+  build:function(p){var rw=p.rw,rh=p.rh,ph=p.ph,sk=rw*.5,R=rw*rh,PA=rw*ph,A=R+PA;
+    return {text:'أوجد مساحة المنطقة المظلّلة (متوازي أضلاع فوق مستطيل، الأبعاد بالسنتيمتر).',
+    items:[{k:'poly',pts:rect(0,ph,rw,rh),c:'a',s:1},{k:'poly',pts:[[sk,0],[sk+rw,0],[rw,ph],[0,ph]],c:'b',s:2},lab([rw/2,ph+rh],0,19,n(rw)+' سم'),lab([rw,ph+rh/2],8,4,n(rh)+' سم','start'),lab([rw*.75,ph/2],0,4,n(ph)+' سم')],
+    steps:[PLAN+' هنا: مستطيل + متوازي أضلاع.','مساحة المستطيل = '+n(rw)+' × '+n(rh)+' = <b>'+n(R)+' سم²</b>','قاعدة متوازي الأضلاع = '+n(rw)+' سم (عرض المستطيل) وارتفاعه '+n(ph)+' سم<br>المساحة = '+n(rw)+' × '+n(ph)+' = <b>'+n(PA)+' سم²</b>','المساحة الكلية = '+n(R)+' + '+n(PA)+' = <b>'+n(A)+' سم²</b>'],
+    ans:A,u:'سم',wrong:[R,PA,A+PA,R+.5*PA]}}};
+
+P.SqTri={name:'تمرين ١ (ب)',
+  params:[{k:'s',l:'ضلع المربع',min:3,max:8,step:1,v:4},{k:'e',l:'الجزء فوق المربع',min:3,max:9,step:1,v:5},{k:'b',l:'الضلع العلوي للمثلث',min:6,max:14,step:1,v:8}],
+  build:function(p){var s=p.s,e=p.e,b=p.b,H=s+e,SQ=s*s,T=.5*b*H,A=SQ+T;
+    return {text:'أوجد مساحة المنطقة المظلّلة (مربع ومثلث قائم الزاوية، الأبعاد بالسنتيمتر).',
+    items:[{k:'poly',pts:rect(0,e,s,s),c:'a',s:1},{k:'poly',pts:[[s,0],[s+b,0],[s,H]],c:'b',s:2},lab([s/2,H],0,19,n(s)+' سم'),lab([s,e/2],-8,4,n(e)+' سم','end'),lab([s+b/2,0],0,-7,n(b)+' سم')],
+    steps:[PLAN+' هنا: مربع + مثلث قائم.','مساحة المربع = '+n(s)+' × '+n(s)+' = <b>'+n(SQ)+' سم²</b>','الضلع القائم الرأسي للمثلث = '+n(e)+' + '+n(s)+' = '+n(H)+' سم، والأفقي = '+n(b)+' سم<br>مساحة المثلث = ½ × '+n(b)+' × '+n(H)+' = <b>'+n(T)+' سم²</b>','المساحة الكلية = '+n(SQ)+' + '+n(T)+' = <b>'+n(A)+' سم²</b>'],
+    ans:A,u:'سم',wrong:[SQ+b*H,SQ,T,SQ+.5*b*e]}}};
+
+P.TrapHole={name:'تمرين ١ (ج)',
+  params:[{k:'a',l:'القاعدة العليا',min:6,max:16,step:1,v:10},{k:'B',l:'القاعدة السفلى',min:12,max:24,step:1,v:16},{k:'ht',l:'ارتفاع شبه المنحرف',min:5,max:12,step:1,v:7},{k:'tb',l:'قاعدة المثلث الأبيض',min:6,max:18,step:1,v:11},{k:'th',l:'ارتفاع المثلث الأبيض',min:2,max:8,step:1,v:4}],
+  fix:function(p){p.a=Math.min(p.a,p.B-2);p.tb=Math.min(p.tb,p.B-3);p.th=Math.min(p.th,p.ht-2)},
+  build:function(p){var a=p.a,B=p.B,ht=p.ht,tb=p.tb,th=p.th,g=.6,T=.5*(a+B)*ht,H=.5*tb*th,A=T-H;
+    return {text:'أوجد مساحة المنطقة المظلّلة (البرتقالية) في شبه المنحرف (الأبعاد بالسنتيمتر).',
+    items:[{k:'poly',pts:[[(B-a)/2,0],[(B+a)/2,0],[B,ht],[0,ht]],c:'b',s:1},{k:'poly',pts:[[B/2-tb/2,ht-g],[B/2+tb/2,ht-g],[B/2,ht-g-th]],c:'h',s:2,w:1},
+      lab([B/2,0],0,-7,n(a)+' سم'),lab([B/2,ht],0,19,n(B)+' سم'),lab([(3*B+a)/4,ht/2],10,4,n(ht)+' سم','start'),lab([B/2,ht-g],0,-5,n(tb)),lab([B/2,ht-g-th/2],8,4,n(th),'start')],
+    steps:['المظلّل = شبه المنحرف − المثلث الأبيض.','مساحة شبه المنحرف = ½ (ق١ + ق٢) × ع = ½ × ('+n(a)+' + '+n(B)+') × '+n(ht)+' = <b>'+n(T)+' سم²</b>','مساحة المثلث = ½ × '+n(tb)+' × '+n(th)+' = <b>'+n(H)+' سم²</b>','مساحة المنطقة المظلّلة = '+n(T)+' − '+n(H)+' = <b>'+n(A)+' سم²</b>'],
+    ans:A,u:'سم',wrong:[T+H,T,H,T-2*H]}}};
+
+P.RectHole={name:'تمرين ١ (د)',
+  params:[{k:'L',l:'الطول (م)',min:40,max:150,step:10,v:90},{k:'Wd',l:'العرض (م)',min:30,max:100,step:10,v:50},{k:'s',l:'ضلع المربع الداخلي (م)',min:10,max:40,step:10,v:20}],
+  fix:function(p){p.s=Math.min(p.s,Math.min(p.L,p.Wd)-10)},
+  build:function(p){var L=p.L,Wd=p.Wd,s=p.s,hx=Math.min(L-s-4,L*.55),hy=(Wd-s)*.3,R=L*Wd,S=s*s,A=R-S;
+    return {text:'أوجد مساحة المنطقة المظلّلة (مستطيل بداخله مربع فارغ، الأبعاد بالمتر).',
+    items:[{k:'poly',pts:rect(0,0,L,Wd),c:'a',s:1},{k:'poly',pts:rect(hx,hy,s,s),c:'h',s:2,w:1},lab([L/2,Wd],0,19,n(L)+' م'),lab([L,Wd/2],8,4,n(Wd)+' م','start'),lab([hx+s/2,hy+s/2],0,4,n(s)+' م')],
+    steps:['المظلّل = مساحة المستطيل − مساحة المربع.','مساحة المستطيل = '+n(L)+' × '+n(Wd)+' = <b>'+n(R)+' م²</b>','مساحة المربع = '+n(s)+' × '+n(s)+' = <b>'+n(S)+' م²</b>','مساحة المنطقة المظلّلة = '+n(R)+' − '+n(S)+' = <b>'+n(A)+' م²</b>'],
+    ans:A,u:'م',wrong:[R+S,R,S,R-4*s]}}};
+
+P.Stadium={name:'تمرين ٢',
+  params:[{k:'L',l:'طول الجزء المستطيل (م)',min:40,max:100,step:10,v:60},{k:'Wd',l:'العرض = القطر (م)',min:20,max:50,step:10,v:30}],
+  build:function(p){var L=p.L,Wd=p.Wd,r=Wd/2,R=L*Wd,C=PI*r*r,A=R+C;
+    return {text:'أوجد المساحة الكلية للملعب الموضّح، باعتبار أنّ π = ٣٫١٤ (نصفا دائرة عند الطرفين).',
+    items:[{k:'poly',pts:rect(0,0,L,Wd),c:'a',s:1},{k:'semi',ctr:[0,r],r:r,d:'L',c:'b',s:2,bb:[[-r,r]]},{k:'semi',ctr:[L,r],r:r,d:'R',c:'b',s:2,bb:[[L+r,r]]},lab([L/2,Wd],0,19,n(L)+' م'),lab([L/2,Wd/2],0,4,n(Wd)+' م')],
+    steps:['الملعب = مستطيل + نصفا دائرة (يكوّنان دائرة كاملة).','مساحة المستطيل = '+n(L)+' × '+n(Wd)+' = <b>'+n(R)+' م²</b>','نصف القطر = '+n(Wd)+' ÷ ٢ = '+n(r)+' م<br>مساحة الدائرة = ٣٫١٤ × '+n(r)+' × '+n(r)+' = <b>'+n(C)+' م²</b>','المساحة الكلية = '+n(R)+' + '+n(C)+' = <b>'+n(A)+' م²</b>'],
+    ans:A,u:'م',wrong:[R,C,R+2*C,R+PI*Wd*Wd]}}};
+
+P.Maryam={name:'مهارات تفكير ٣',
+  params:[{k:'b',l:'العرض المشترك',min:6,max:16,step:2,v:10},{k:'ht',l:'ارتفاع المثلث (أ)',min:3,max:10,step:1,v:4},{k:'rh',l:'ارتفاع المستطيل (ب)',min:2,max:6,step:1,v:3}],
+  qhook:function(p){if(Math.random()<.5){p.rh=Math.min(p.rh,5);p.ht=2*p.rh}},
+  build:function(p){var b=p.b,ht=p.ht,rh=p.rh,A=.5*b*ht,B=b*rh,cor=A===B?0:(A>B?1:2);
+    return {text:'تقول مريم إنّ مساحة الشكل (أ) تساوي مساحة الشكل (ب). هل مريم على صواب؟ اعرض طريقة الحل لتوضيح إجابتك.',
+    items:[{k:'poly',pts:[[0,ht],[b,ht],[b/2,0]],c:'a',s:1},{k:'poly',pts:rect(0,ht,b,rh),c:'b',s:2},lab([b/2,ht*.35],8,4,n(ht)+' سم','start'),lab([b/2,ht*.85],0,4,'الشكل (أ)'),lab([b/2,ht+rh/2],0,4,'الشكل (ب)'),lab([b/2,ht+rh],0,19,n(b)+' سم'),lab([0,ht+rh/2],-8,4,n(rh)+' سم','end')],
+    steps:['نحسب مساحة كل شكل ثم نقارن بينهما.','مساحة الشكل (أ) مثلث = ½ × '+n(b)+' × '+n(ht)+' = <b>'+n(A)+' سم²</b>','مساحة الشكل (ب) مستطيل = '+n(b)+' × '+n(rh)+' = <b>'+n(B)+' سم²</b>',cor===0?'المساحتان متساويتان ('+n(A)+' = '+n(B)+')، إذن <b>مريم على صواب</b>.':'المساحتان مختلفتان ('+n(A)+' ≠ '+n(B)+')، إذن <b>مريم على خطأ</b> ومساحة الشكل '+(cor===1?'(أ)':'(ب)')+' هي الأكبر.'],
+    choice:['نعم، مريم على صواب (المساحتان متساويتان)','لا، مساحة الشكل (أ) أكبر','لا، مساحة الشكل (ب) أكبر'],cor:cor,u:'سم'}}};
+
+var GROUPS=[['استكشف',['L1','L2']],['أمثلة',['Para','Ends']],['دورك الآن',['Pent','Garden','SemiTop']],['تمارين ذاتية',['ParaRect','SqTri','TrapHole','RectHole','Stadium','Maryam']]];
+var KEYS=Object.keys(P);
+var CHIP={L1:'الطريقة ١',L2:'الطريقة ٢',Para:'مثال ١',Ends:'مثال ٢',Pent:'دورك ١',Garden:'دورك ٢',SemiTop:'دورك ٣',ParaRect:'١ (أ)',SqTri:'١ (ب)',TrapHole:'١ (ج)',RectHole:'١ (د)',Stadium:'تمرين ٢',Maryam:'تفكير ٣'};
+
+function defaults(def){var p={};def.params.forEach(function(q){p[q.k]=q.v});def.fix&&def.fix(p);return p}
+function randP(def){var p={};def.params.forEach(function(q){var c=Math.round((q.max-q.min)/q.step);p[q.k]=r2(q.min+q.step*Math.floor(Math.random()*(c+1)))});def.fix&&def.fix(p);def.qhook&&def.qhook(p);return p}
+
+/* ---------- navigation & gate ---------- */
+var views={home:$('#vHome'),ex:$('#vEx'),qz:$('#vQz')};
+function show(v){for(var k in views)views[k].hidden=k!==v;window.scrollTo(0,0);if(v==='ex'&&!exId)exOpen('L1');if(v==='qz')qzStart()}
+var unlocked=function(){return ss.get('unl')===CFG.pw};
+var pending=null;
+function gate(next){if(unlocked()){next();return}pending=next;$('#ovPass').hidden=false;$('#passIn').value='';$('#passErr').textContent='';setTimeout(function(){$('#passIn').focus()},30)}
+$('#passForm').addEventListener('submit',function(e){e.preventDefault();var v=$('#passIn').value.trim();if(v===String(CFG.pw)){ss.set('unl',CFG.pw);$('#ovPass').hidden=true;var f=pending;pending=null;f&&f()}else{$('#passErr').textContent='كلمة السر غير صحيحة، اطلبها من المعلم وحاول مرة أخرى.'}});
+$('#ovPass').addEventListener('click',function(e){if(e.target.hasAttribute('data-close')||e.target.id==='ovPass'){$('#ovPass').hidden=true;pending=null}});
+$('#goEx').addEventListener('click',function(){gate(function(){show('ex')})});
+$('#goQz').addEventListener('click',function(){gate(function(){show('qz')})});
+$('#homeBtn').addEventListener('click',function(){show('home')});
+Array.prototype.forEach.call(document.querySelectorAll('[data-home]'),function(b){b.addEventListener('click',function(){show('home')})});
+$('#exContacts').innerHTML=EG()+KW();
+
+/* ---------- explanation ---------- */
+var exId=null,exDef,exP,exStep=0,exB;
+var chipsEl=$('#chips');
+chipsEl.innerHTML=GROUPS.map(function(g){return '<div class="grp"><small>'+g[0]+'</small>'+g[1].map(function(id){return '<button class="chip" type="button" data-id="'+id+'" aria-pressed="false">'+CHIP[id]+'</button>'}).join('')+'</div>'}).join('');
+chipsEl.addEventListener('click',function(e){var b=e.target.closest('.chip');if(b)exOpen(b.dataset.id)});
+function exOpen(id){
+  exId=id;exDef=P[id];exP=defaults(exDef);exStep=0;
+  Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'),function(c){c.setAttribute('aria-pressed',c.dataset.id===id?'true':'false')});
+  $('#exMain').innerHTML='<div class="panel"><h3>'+exDef.name+'</h3><p class="qtext" id="exQ"></p><div id="exFig"></div></div>'+
+   '<div class="panel"><h3>غيّر أرقام المسألة</h3><div class="ctrl" id="ctrl">'+exDef.params.map(function(q){return '<label for="s_'+q.k+'"><span>'+q.l+'</span><output id="o_'+q.k+'"></output><input id="s_'+q.k+'" type="range" min="'+q.min+'" max="'+q.max+'" step="'+q.step+'"></label>'}).join('')+'</div>'+
+   '<div class="row" style="margin-top:10px"><button class="btn ghost" id="rnd" type="button">أرقام عشوائية</button><button class="btn ghost" id="rst" type="button">أرقام جديدة من الدرس</button></div>'+
+   '<h3 style="margin-top:16px">الحل خطوة بخطوة</h3><ol class="steps" id="steps"></ol>'+
+   '<div class="row"><button class="btn ghost" id="prev" type="button">السابق</button><button class="btn" id="next" type="button">الخطوة التالية</button><button class="btn ghost" id="all" type="button">أظهر الحل كاملًا</button></div>'+
+   '<div class="try" id="try"></div></div>';
+  exDef.params.forEach(function(q){$('#s_'+q.k).addEventListener('input',function(e){exP[q.k]=+e.target.value;exDef.fix&&exDef.fix(exP);exUpdate(true)})});
+  $('#rnd').onclick=function(){exP=randP(exDef);exUpdate(true)};
+  $('#rst').onclick=function(){exP=defaults(exDef);exUpdate(true)};
+  $('#prev').onclick=function(){exStep=Math.max(0,exStep-1);exRender()};
+  $('#next').onclick=function(){exStep=Math.min(exB.steps.length-1,exStep+1);exRender()};
+  $('#all').onclick=function(){exStep=exB.steps.length-1;exRender()};
+  exUpdate(true);
+}
+function exUpdate(resetTry){
+  exB=exDef.build(exP);
+  exDef.params.forEach(function(q){var v=exP[q.k];$('#s_'+q.k).value=v;$('#o_'+q.k).textContent=n(v)});
+  $('#exQ').innerHTML=exB.text;
+  if(resetTry)exTry();
+  exRender();
+}
+function exRender(){
+  $('#exFig').innerHTML=fig(exB.items,exStep);
+  var last=exB.steps.length-1,h='';
+  for(var i=0;i<=exStep;i++)h+='<li class="'+(i===0?'plan ':'')+(i===exStep?'cur':'')+'"><i>'+(i===0?'•':ar(i))+'</i><div>'+exB.steps[i]+'</div></li>';
+  $('#steps').innerHTML=h;
+  $('#prev').disabled=exStep===0;$('#next').disabled=exStep===last;$('#all').disabled=exStep===last;
+}
+function exTry(){
+  var t=$('#try');
+  if(exB.choice){
+    t.innerHTML='<b>جرّب بنفسك: اختر إجابتك</b><div class="opts">'+exB.choice.map(function(c,i){return '<button class="opt" type="button" data-i="'+i+'">'+c+'</button>'}).join('')+'</div><div id="fb"></div>';
+    t.querySelector('.opts').onclick=function(e){var b=e.target.closest('.opt');if(!b)return;var ok=+b.dataset.i===exB.cor;b.classList.add(ok?'right':'wrong');$('#fb').innerHTML='<div class="fb '+(ok?'ok':'no')+'">'+(ok?'إجابة صحيحة!':'ليست صحيحة، راجع الخطوات وحاول مرة أخرى.')+'</div>';if(ok){exStep=exB.steps.length-1;exRender()}};
+  }else{
+    t.innerHTML='<label for="myAns"><b>جرّب بنفسك: اكتب المساحة النهائية ('+U2(exB.u)+')</b></label><div class="row" style="margin-top:6px"><input type="text" id="myAns" inputmode="decimal" autocomplete="off"><button class="btn acc" id="chk" type="button">تحقق</button></div><div id="fb"></div>';
+    var go=function(){var v=parseNum($('#myAns').value);var fb=$('#fb');
+      if(isNaN(v)){fb.innerHTML='<div class="fb no">اكتب رقمًا أولًا.</div>';return}
+      if(Math.abs(v-exB.ans)<.006){fb.innerHTML='<div class="fb ok">إجابة صحيحة! المساحة = '+n(exB.ans)+' '+U2(exB.u)+'</div>';exStep=exB.steps.length-1;exRender()}
+      else fb.innerHTML='<div class="fb no">ليست صحيحة بعد. افتح الخطوات وراجع كل جزء ثم حاول مرة أخرى.</div>'};
+    $('#chk').onclick=go;$('#myAns').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  }
+}
+
+/* ---------- quiz ---------- */
+var Q={name:'',qs:[],i:0};
+var qz=$('#qzMain');
+function qzStart(){
+  qz.innerHTML=EG().replace('class="contact"','class="contact" style="margin-bottom:14px"')+
+  '<div class="panel" id="qStart"><h3>قبل أن تبدأ الاختبار</h3><p class="muted">١٠ أسئلة من أفكار الدرس بأرقام مختلفة. اكتب اسمك أولًا، فلا يبدأ الاختبار بدونه.</p>'+
+  '<label for="stName" style="font-weight:600;display:block;margin-top:12px">اسم الطالب (إجباري)</label><input class="field" id="stName" type="text" autocomplete="off" placeholder="اكتب اسمك الكامل" maxlength="60">'+
+  '<p class="err" id="nmErr" role="alert"></p><button class="btn acc" id="stGo" type="button">متابعة</button></div>';
+  var inp=$('#stName');inp.value=Q.name||'';
+  var next=function(){var v=inp.value.trim().replace(/\s+/g,' ');
+    if(v.length<3){$('#nmErr').textContent='اسم الطالب مطلوب (٣ أحرف على الأقل) قبل بدء الاختبار.';inp.focus();return}
+    Q.name=v;$('#qStart').innerHTML='<h3>تأكيد الاسم</h3><p style="font-size:1.2rem;margin:6px 0">هل اسمك: <b style="color:var(--brand)">'+esc(v)+'</b> ؟</p><p class="muted">سيظهر هذا الاسم في نتيجتك، ولا يمكن تغييره بعد بدء الاختبار.</p><div class="row"><button class="btn acc" id="stOk" type="button">نعم، هذا اسمي. ابدأ الاختبار</button><button class="btn ghost" id="stEdit" type="button">تعديل الاسم</button></div>';
+    $('#stOk').onclick=qzRun;$('#stEdit').onclick=qzStart};
+  $('#stGo').onclick=next;inp.addEventListener('keydown',function(e){if(e.key==='Enter')next()});
+}
+function mkOpts(q){
+  var set=[q.ans];(q.wrong||[]).forEach(function(w){w=r2(w);if(w>0&&set.indexOf(w)<0)set.push(w)});
+  var st=Math.max(1,Math.round(q.ans*.1)),k=1;while(set.length<4){var w=r2(q.ans+(k%2?1:-1)*st*Math.ceil(k/2));if(w>0&&set.indexOf(w)<0)set.push(w);k++}
+  var ds=set.slice(1,4);var all=shuffle([q.ans].concat(ds));
+  return {opts:all.map(function(v){return n(v)+' '+U2(q.u)}),cor:all.indexOf(q.ans)};
+}
+function qzRun(){
+  var keys=shuffle(KEYS).slice(0,10);
+  Q.qs=keys.map(function(id){var def=P[id],b=def.build(randP(def)),o;
+    if(b.choice)o={opts:b.choice,cor:b.cor};else o=mkOpts(b);
+    return {id:id,b:b,opts:o.opts,cor:o.cor,sel:-1}});
+  Q.i=0;qzQ();
+}
+function qzQ(){
+  var q=Q.qs[Q.i],last=Q.i===Q.qs.length-1;
+  qz.innerHTML='<div class="row" style="justify-content:space-between"><b>الطالب: '+esc(Q.name)+'</b><span class="muted">سؤال '+ar(Q.i+1)+' من '+ar(Q.qs.length)+'</span></div><div class="prog"><div style="width:'+(Q.i/Q.qs.length*100)+'%"></div></div>'+
+  '<div class="panel">'+fig(q.b.items,99)+'<p class="qtext" style="margin-top:12px">'+q.b.text+'</p><div class="opts" id="opts">'+q.opts.map(function(o,i){return '<button class="opt" type="button" data-i="'+i+'" aria-pressed="'+(q.sel===i)+'">'+o+'</button>'}).join('')+'</div>'+
+  '<div class="row" style="margin-top:14px;justify-content:space-between"><button class="btn ghost" id="qPrev" type="button"'+(Q.i===0?' disabled':'')+'>السابق</button><button class="btn acc" id="qNext" type="button"'+(q.sel<0?' disabled':'')+'>'+(last?'إنهاء الاختبار':'التالي')+'</button></div></div>';
+  $('#opts').onclick=function(e){var b=e.target.closest('.opt');if(!b)return;q.sel=+b.dataset.i;Array.prototype.forEach.call(this.children,function(c){c.setAttribute('aria-pressed',String(+c.dataset.i===q.sel))});$('#qNext').disabled=false};
+  $('#qPrev').onclick=function(){Q.i--;qzQ()};
+  $('#qNext').onclick=function(){if(last)qzEnd();else{Q.i++;qzQ()}};
+}
+function qzEnd(){
+  var sc=Q.qs.filter(function(q){return q.sel===q.cor}).length,tot=Q.qs.length,pct=sc/tot;
+  var msg=pct>=.9?'ممتاز! أتقنت الدرس.':pct>=.7?'جيد جدًا، استمر.':pct>=.5?'جيد، راجع الأسئلة التي أخطأت فيها.':'حاول مرة أخرى بعد مراجعة الشرح التفاعلي.';
+  qz.innerHTML='<div class="panel" style="text-align:center"><h3>انتهى الاختبار</h3><p style="font-size:1.25rem;margin:4px 0">الطالب: <b style="color:var(--brand)">'+esc(Q.name)+'</b></p><div class="score" style="--deg:'+(pct*360)+'deg"><span>'+ar(sc)+'/'+ar(tot)+'</span></div><p style="font-weight:600;margin:4px 0">'+msg+'</p><div class="row" style="justify-content:center;margin-top:10px"><button class="btn acc" id="again" type="button">إعادة الاختبار بأرقام جديدة</button><button class="btn ghost" data-home2 type="button">الرئيسية</button></div></div>'+
+  '<div style="margin-top:14px">'+EG()+'</div><div class="rev">'+Q.qs.map(function(q,i){var ok=q.sel===q.cor;return '<details><summary><span class="'+(ok?'tick':'cross')+'">'+(ok?'✓':'✗')+'</span> سؤال '+ar(i+1)+'</summary><div style="margin-top:8px">'+fig(q.b.items,99)+'<p>'+q.b.text+'</p><p>إجابتك: <b>'+(q.sel>=0?q.opts[q.sel]:'—')+'</b><br>الإجابة الصحيحة: <b>'+q.opts[q.cor]+'</b></p><p class="muted">'+q.b.steps.slice(1).join('<br>')+'</p></div></details>'}).join('')+'</div>';
+  $('#again').onclick=qzStart;qz.querySelector('[data-home2]').onclick=function(){show('home')};
+  window.scrollTo(0,0);
+}
+
+/* ---------- teacher settings ---------- */
+var ovT=$('#ovTeach'),tb=$('#teachBox');
+$('#lockBtn').addEventListener('click',openTeacher);
+ovT.addEventListener('click',function(e){if(e.target===ovT||e.target.hasAttribute('data-close'))ovT.hidden=true});
+async function openTeacher(){
+  ovT.hidden=false;tb.innerHTML='<h3>إعدادات المعلم</h3><p class="muted">جارٍ التحقق من الصلاحيات…</p>';
+  var C=window.claude,user=null,art=null,can=false;
+  try{if(C&&C.use){user=await C.use('user');art=await C.use('artifact');can=!!(user&&art&&await user.canEdit())}}catch(e){}
+  if(!can){tb.innerHTML='<h3>إعدادات المعلم</h3><p>تغيير كلمة السر متاح للمعلم فقط (مالك الصفحة). افتح هذه الصفحة من حسابك على Claude لتغييرها.</p><button class="btn ghost" data-close type="button">إغلاق</button>';return}
+  tb.innerHTML='<h3>كلمة سر الطلاب</h3><p class="muted">هذه الكلمة تُطلب من الطالب قبل دخول الشرح التفاعلي والاختبار.</p><p>الكلمة الحالية: <b dir="ltr" style="font-size:1.2rem">'+esc(CFG.pw)+'</b></p><label for="newPw" style="font-weight:600">كلمة السر الجديدة</label><input class="field" id="newPw" type="text" autocomplete="off" maxlength="40"><p class="err" id="tErr" role="alert"></p><p class="muted">بعد الحفظ تُحدَّث الصفحة لجميع الطلاب، ويُطلب منهم الدخول بالكلمة الجديدة.</p><div class="row"><button class="btn" id="savePw" type="button">حفظ الكلمة</button><button class="btn ghost" data-close type="button">إلغاء</button></div>';
+  $('#savePw').onclick=async function(){
+    var v=$('#newPw').value.trim(),er=$('#tErr');
+    if(v.length<3){er.textContent='اكتب كلمة سر من ٣ أحرف أو أرقام على الأقل.';return}
+    this.disabled=true;er.textContent='جارٍ الحفظ…';
+    var body=SRC.replace(/(<script type="application\/json" id="cfg">)[\s\S]*?(<\/script>)/,function(m,a,b){return a+JSON.stringify({pw:v}).replace(/</g,'\\u003c')+b});
+    var reset=':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}';
+    var doc='<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>'+reset+'</style></head><body>'+body+'</body></html>';
+    try{await art.publish(doc);er.textContent='تم الحفظ، جارٍ تحديث الصفحة…'}
+    catch(e){this.disabled=false;er.textContent=(e&&e.code==='conflict')?'تم تحديث الصفحة من مكان آخر. أعد المحاولة بعد التحديث.':(e&&(e.code==='not_writer'||e.code==='not_granted'))?'لا تملك صلاحية تعديل هذه الصفحة.':'تعذّر الحفظ، حاول مرة أخرى.'}
+  };
+}
+})();
+</script>
+
+</body></html>
